@@ -158,6 +158,27 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .chip .ar{font-family:var(--f-ar);font-size:1.15rem;line-height:1.2;color:var(--fg)}
 .chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 
+/* Fortschritt übertragen */
+.sync{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.sync-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.sync h2{margin:0;font-size:1.2rem}
+.sync h3{margin:0;font-size:1rem}
+.sync-sum{margin:0;color:var(--muted);font-variant-numeric:tabular-nums}
+.sync-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.sync-card{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0;background:var(--bg)}
+.qr{background:#fff;border-radius:8px;padding:8px;width:min(210px,100%);align-self:center;line-height:0}
+.qr svg{width:100%;height:auto;display:block}
+.coderow{display:flex;gap:6px}
+.coderow input,.sync textarea{flex:1;min-width:0;font-size:.85rem;font-family:ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);color:var(--fg)}
+.sync textarea{resize:vertical;width:100%}
+.btn{border:0;background:var(--accent);color:var(--surface);border-radius:8px;padding:8px 14px;font-weight:700;font-size:.88rem;text-align:center}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.filelabel{cursor:pointer;align-self:flex-start}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.msg{font-size:.88rem;margin:0}
+.msg.err{color:var(--bad)}
+.msg.ok{color:var(--good);font-weight:700}
+
 /* Seminar-Modus: klein, gedimmt, ohne Erklärtexte */
 body.seminar{font-size:13px}
 body.seminar .wrap{max-width:440px;gap:10px}
@@ -185,6 +206,7 @@ body.seminar .stage{padding:8px 10px}
   .opt,.cell,.stage,.wcard{transition:background .15s,border-color .15s}
 }
 </style>
+<script src="vendor/qrcode.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -199,8 +221,30 @@ body.seminar .stage{padding:8px 10px}
         <button data-app="free" aria-pressed="false">Frei</button>
       </div>
       <button class="toggle" id="semBtn" aria-pressed="false" title="Taste S">Seminar</button>
+      <button class="toggle" id="syncBtn" aria-pressed="false" aria-controls="syncSec">Fortschritt</button>
     </div>
   </header>
+
+  <section id="syncSec" class="sync" hidden>
+    <div class="sync-head"><h2>Fortschritt übertragen</h2><button class="back" id="syncClose">Schließen</button></div>
+    <p class="sync-sum" id="syncSum"></p>
+    <div class="sync-grid">
+      <div class="sync-card">
+        <h3>Von diesem Gerät mitnehmen</h3>
+        <p class="note">Scann den QR-Code mit der Kamera des anderen Geräts. Oder kopier den Code und füg ihn dort ein.</p>
+        <div class="qr" id="qrBox"></div>
+        <div class="coderow"><input id="codeOut" readonly aria-label="Dein Fortschritts-Code"><button class="btn" id="copyBtn">Kopieren</button></div>
+        <button class="btn ghost" id="fileBtn">Als Datei sichern</button>
+      </div>
+      <div class="sync-card">
+        <h3>Auf dieses Gerät holen</h3>
+        <p class="note">Code vom anderen Gerät einfügen oder eine gesicherte Datei öffnen.</p>
+        <textarea id="codeIn" rows="3" placeholder="AY1-…" aria-label="Fortschritts-Code einfügen"></textarea>
+        <label class="btn ghost filelabel">Datei öffnen<input type="file" id="fileIn" accept=".json,.txt,application/json,text/plain" hidden></label>
+        <div id="importBox"></div>
+      </div>
+    </div>
+  </section>
 
   <section id="pathView"></section>
 
@@ -669,7 +713,7 @@ function navList(){
   return null;
 }
 document.addEventListener("keydown",e=>{
-  if(e.target.tagName==="INPUT"||e.metaKey||e.ctrlKey||e.altKey) return;
+  if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA"||e.metaKey||e.ctrlKey||e.altKey) return;
   if(e.key==="s"||e.key==="S"){setSem(!document.body.classList.contains("seminar"));return}
   const nav=navList();
   if(nav&&(e.key==="ArrowLeft"||e.key==="ArrowRight")){
@@ -681,8 +725,112 @@ document.addEventListener("keydown",e=>{
   if((e.key===" "||e.key==="Enter")&&cur&&cur.done){e.preventDefault();newQ()}
 });
 
+/* ---------- Fortschritt übertragen ---------- */
+// Code-Format: AY1-<Stände>.<Tag><fertig>.<richtig>.<falsch>-<Prüfzeichen>
+// Stände: je zwei Werte (0–4) in einem Zeichen. Reihenfolge: 28 Buchstaben, 9 Vokalzeichen, dann WORDS.
+// Wichtig: neue Wörter nur hinten an WORDS anhängen, sonst passen alte Codes nicht mehr.
+const B36="0123456789abcdefghijklmnopqrstuvwxyz";
+const syncKeys=()=>[...L.map(l=>String(l.i)),...HKEYS,...WORDS.map(w=>"w:"+w.tr)];
+const checkChar=raw=>B36[[...raw].reduce((a,c,i)=>(a+c.charCodeAt(0)*(i+1))%36,0)];
+function encodeProgress(){
+  const ds=syncKeys().map(k=>bx(k)); if(ds.length%2) ds.push(0);
+  let body=""; for(let i=0;i<ds.length;i+=2) body+=B36[ds[i]*5+ds[i+1]];
+  const raw=`${body}.${unl}${store.get("ay-fin",false)?1:0}.${tally.ok.toString(36)}.${tally.no.toString(36)}`;
+  return `AY1-${raw}-${checkChar(raw)}`;
+}
+function decodeProgress(input){
+  let s=String(input||"").trim();
+  const h=s.match(/#p=([^&\s]+)/); if(h) s=decodeURIComponent(h[1]);
+  s=s.replace(/\s+/g,"").toLowerCase();
+  if(!s) return null;
+  const parts=s.split("-");
+  if(parts.length!==3||parts[0]!=="ay1") throw new Error("Das sieht nicht nach einem Fortschritts-Code aus. Er fängt mit AY1- an.");
+  const raw=parts[1];
+  if(checkChar(raw)!==parts[2]) throw new Error("Der Code ist unvollständig oder hat einen Tippfehler. Kopier ihn am besten noch mal komplett.");
+  const [body,m,ok,no]=raw.split(".");
+  if(!body||!m||m.length<2) throw new Error("Der Code ist unvollständig. Kopier ihn am besten noch mal komplett.");
+  const ds=[];
+  for(const c of body){const v=B36.indexOf(c); if(v<0||v>24) throw new Error("Der Code enthält ein ungültiges Zeichen."); ds.push(Math.floor(v/5),v%5)}
+  const b={}; syncKeys().forEach((k,i)=>{if(ds[i]) b[k]=ds[i]});
+  return {box:b,unl:Math.min(7,Math.max(1,+m[0]||1)),fin:m[1]==="1",tally:{ok:parseInt(ok,36)||0,no:parseInt(no,36)||0}};
+}
+function summarize(b,u,fin){
+  const n=keys=>keys.filter(k=>(b[k]||0)>=3).length;
+  const ls=n(L.map(l=>String(l.i))), hs=n(HKEYS), ws=n(WORDS.map(w=>"w:"+w.tr));
+  return `${ls}/28 Buchstaben, ${hs}/9 Vokalzeichen und ${ws} Wörter sicher · ${fin?"alle Tage geschafft":"bis Tag "+u+" offen"}`;
+}
+function openSync(){
+  $("syncSec").hidden=false; $("syncBtn").setAttribute("aria-pressed","true");
+  $("syncSum").textContent="Auf diesem Gerät: "+summarize(box,unl,store.get("ay-fin",false));
+  const code=encodeProgress(); $("codeOut").value=code;
+  const url=location.origin+location.pathname+"#p="+code;
+  try{
+    if(typeof qrcode!=="function") throw 0;
+    const q=qrcode(0,"M"); q.addData(url); q.make();
+    $("qrBox").innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true,alt:"QR-Code mit deinem Lernstand"});
+    $("qrBox").hidden=false;
+  }catch(e){$("qrBox").hidden=true}
+}
+function closeSync(){$("syncSec").hidden=true;$("syncBtn").setAttribute("aria-pressed","false")}
+$("syncBtn").onclick=()=>$("syncSec").hidden?openSync():closeSync();
+$("syncClose").onclick=closeSync;
+$("copyBtn").onclick=()=>{
+  const inp=$("codeOut"), done=()=>{$("copyBtn").textContent="Kopiert";setTimeout(()=>$("copyBtn").textContent="Kopieren",1500)};
+  const fallback=()=>{inp.focus();inp.select();try{document.execCommand("copy");done()}catch(e){}};
+  try{navigator.clipboard.writeText(inp.value).then(done,fallback)}catch(e){fallback()}
+};
+$("fileBtn").onclick=()=>{
+  const d=new Date().toISOString().slice(0,10);
+  const data={app:"alif-bis-ya",version:1,exported:new Date().toISOString(),code:encodeProgress()};
+  const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,1)],{type:"application/json"}));
+  const a=document.createElement("a"); a.href=url; a.download=`alif-bis-ya-fortschritt-${d}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000);
+};
+let pending=null;
+function showImport(text,intro){
+  const ib=$("importBox"); pending=null;
+  let res; try{res=decodeProgress(text)}catch(e){ib.innerHTML=`<p class="msg err">${e.message}</p>`;return}
+  if(!res){ib.innerHTML="";return}
+  pending=res;
+  ib.innerHTML=`${intro?`<p class="msg">${intro}</p>`:""}<p class="msg">Gefunden: ${summarize(res.box,res.unl,res.fin)}</p>
+    <div class="btnrow"><button class="btn" id="mergeBtn">Zusammenführen</button><button class="btn ghost" id="replaceBtn">Ersetzen</button></div>
+    <p class="note">Zusammenführen behält von beiden Geräten jeweils den besseren Stand. Ersetzen überschreibt den Lernstand auf diesem Gerät.</p>`;
+  $("mergeBtn").onclick=()=>applyImport(true);
+  $("replaceBtn").onclick=()=>applyImport(false);
+}
+function applyImport(merge){
+  if(!pending) return; const p=pending;
+  if(merge){
+    for(const k in p.box) box[k]=Math.max(bx(k),p.box[k]);
+    unl=Math.max(unl,p.unl);
+    if(p.fin) store.set("ay-fin",true);
+    tally={ok:Math.max(tally.ok,p.tally.ok),no:Math.max(tally.no,p.tally.no)};
+  }else{
+    box={...p.box}; unl=p.unl; store.set("ay-fin",p.fin); tally={...p.tally};
+  }
+  store.set("ay-box",box); store.set("ay-unl",unl); store.set("ay-tally",tally);
+  pending=null; $("codeIn").value="";
+  openSync(); render();
+  $("importBox").innerHTML=`<p class="msg ok">Übernommen. ${merge?"Beide Stände sind jetzt zusammengeführt.":"Der Lernstand wurde ersetzt."}</p>`;
+}
+$("codeIn").addEventListener("input",e=>showImport(e.target.value));
+$("fileIn").addEventListener("change",e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{let t=String(r.result);try{const j=JSON.parse(t);if(j&&j.code)t=j.code}catch(err){} showImport(t,`Datei: ${f.name}`)};
+  r.onerror=()=>{$("importBox").innerHTML=`<p class="msg err">Die Datei ließ sich nicht lesen. Versuch es noch einmal.</p>`};
+  r.readAsText(f); e.target.value="";
+});
+
 setSem(!!store.get("ay-sem",false));
 render();
+if(location.hash.startsWith("#p=")){
+  const code=location.hash;
+  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+  openSync(); $("codeIn").value=decodeURIComponent(code.slice(3));
+  showImport(code,"Du hast einen Fortschritts-Code geöffnet.");
+  $("syncSec").scrollIntoView({block:"start"});
+}
 </script>
 
 <footer class="foot"><span>Dein Lernstand bleibt auf deinem Gerät.</span><a href="datenschutz.html">Datenschutz</a></footer>

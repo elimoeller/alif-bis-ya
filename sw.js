@@ -1,11 +1,12 @@
 // Offline-Modus: alles beim ersten Besuch speichern, danach zuerst aus dem Speicher laden.
 // Bei jeder Änderung an der Seite VERSION hochzählen, damit Nutzer die neue Fassung bekommen.
-const VERSION="alif-v1";
+const VERSION="alif-v2";
 const ASSETS=[
  "./",
  "index.html",
  "datenschutz.html",
  "fonts.css",
+ "vendor/qrcode.js",
  "manifest.webmanifest",
  "fonts/amiri-arabic-400-normal.woff2",
  "fonts/amiri-arabic-700-normal.woff2",
