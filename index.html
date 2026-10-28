@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Alif bis Yāʾ – Arabisches Alphabet lernen</title>
+<meta name="description" content="Arabisches Alphabet spielerisch lernen: 7-Tage-Lernpfad mit allen 28 Buchstaben, Vokalzeichen (Ḥarakāt) und Lesewörtern. Kostenlos, ohne Anmeldung, funktioniert offline.">
+<meta name="theme-color" content="#eef0ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12161f" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Alif bis Yāʾ">
+<meta property="og:title" content="Alif bis Yāʾ – Arabisches Alphabet lernen">
+<meta property="og:description" content="In 7 Tagen alle 28 Buchstaben, die Vokalzeichen und erste Wörter lesen.">
+<meta property="og:image" content="icons/icon-512.png">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0}img{max-width:100%}
+.foot{max-width:720px;margin:28px auto 0;font-size:.8rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.foot a{color:var(--muted)}
+body.seminar .foot{display:none}
+
+/* Layout: eine schmale Lernspalte. Oben Umschalter Lernpfad/Frei, darunter Pfad, Etappe oder freie Tabs, darunter die Quizkarte */
+:root{
+  --bg:#eef0ec; --surface:#f8f9f6; --fg:#1b2230; --muted:#5d6675; --line:#d4d9d2;
+  --accent:#23468f; --accent-soft:#dfe6f4; --good:#2f7a4a; --bad:#b2402f; --good-soft:#dcefe2; --bad-soft:#f6e0dc;
+  --f-ar:"Amiri","Noto Naskh Arabic","Geeza Pro","Arial",serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161f; --surface:#1a1f2b; --fg:#e4e7ee; --muted:#9aa3b3; --line:#2c3342;
+  --accent:#8fb0ff; --accent-soft:#232f4a; --good:#7dd39b; --bad:#f08a78; --good-soft:#1d3327; --bad-soft:#3a2420; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161f; --surface:#1a1f2b; --fg:#e4e7ee; --muted:#9aa3b3; --line:#2c3342;
+  --accent:#8fb0ff; --accent-soft:#232f4a; --good:#7dd39b; --bad:#f08a78; --good-soft:#1d3327; --bad-soft:#3a2420; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+h1{font-size:1.5rem;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1 .ar{font-family:var(--f-ar);font-weight:700;color:var(--accent);font-size:1.6rem;margin-inline-start:6px}
+.sub{color:var(--muted);margin:2px 0 0;font-size:.9rem;max-width:56ch}
+.hctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mut{color:var(--muted)}
+
+.tabs,.seg{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px;flex-wrap:wrap}
+.tabs button,.seg button{border:0;background:transparent;padding:7px 12px;border-radius:7px;color:var(--muted);font-weight:700;font-size:.88rem}
+.tabs button[aria-pressed="true"],.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.toggle{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:.85rem;color:var(--muted)}
+.toggle[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+
+/* Lernpfad */
+.lead{margin:0 0 12px;color:var(--muted);max-width:62ch}
+.path{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.stage{width:100%;display:grid;grid-template-columns:40px 1fr auto;gap:14px;align-items:center;text-align:start;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px}
+.stage .num{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;border:2px solid var(--line);color:var(--muted);font-variant-numeric:tabular-nums}
+.stage.open{border-color:var(--accent)}
+.stage.open .num{border-color:var(--accent);color:var(--accent)}
+.stage.done .num{background:var(--good);border-color:var(--good);color:var(--surface)}
+.stage.locked{opacity:.5;cursor:not-allowed}
+.sb{display:flex;flex-direction:column;gap:1px;min-width:0}
+.st{font-weight:700}
+.ss{font-size:.85rem;color:var(--muted)}
+.bar{display:block;height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:6px;width:100%;max-width:220px}
+.bar i{display:block;height:100%;background:var(--good)}
+.sprev{font-family:var(--f-ar);font-size:1.45rem;direction:rtl;white-space:nowrap;line-height:1.6}
+.pill{font-size:.75rem;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--accent-soft);color:var(--accent)}
+.pill.ok{background:var(--good-soft);color:var(--good)}
+
+.shead{display:flex;flex-direction:column;gap:6px}
+.back{border:0;background:none;color:var(--accent);padding:0;font-weight:700;align-self:flex-start;font-size:.9rem}
+.shead h2{margin:0;font-size:1.3rem;text-wrap:balance}
+.shead p{margin:0;color:var(--muted)}
+.srow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.srow .bar{margin:0;width:160px}
+.linkbtn{border:0;background:none;color:var(--accent);padding:0;text-decoration:underline;font-size:.85rem}
+.stagebody{display:flex;flex-direction:column;gap:14px}
+
+/* Buchstaben */
+.groups{display:flex;flex-direction:column;gap:14px}
+.group{display:flex;gap:8px;flex-direction:column}
+.glabel{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.cells{display:flex;gap:8px;flex-wrap:wrap;direction:rtl}
+.cell{width:64px;height:72px;border:1px solid var(--line);background:var(--surface);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cell .g{font-family:var(--f-ar);font-size:2rem;line-height:1.1}
+.cell .t{font-size:.72rem;color:var(--muted);direction:ltr}
+.cell[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.cell .box{width:22px;height:3px;border-radius:2px;background:var(--line);margin-top:3px;overflow:hidden}
+.cell .box i{display:block;height:100%;background:var(--good)}
+
+.detail{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
+.detail .big{font-family:var(--f-ar);font-size:5.5rem;line-height:1.1;color:var(--accent);min-width:90px;text-align:center}
+.detail h3{margin:0;font-size:1.2rem}
+.detail h3 small{font-weight:400;color:var(--muted);font-size:.9rem;margin-inline-start:6px}
+.detail p{margin:6px 0 0;max-width:62ch}
+.forms{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px;direction:rtl}
+.forms div{border:1px solid var(--line);border-radius:6px;text-align:center;padding:4px 2px}
+.forms .g{font-family:var(--f-ar);font-size:2rem;line-height:1.5;display:block}
+.forms .l{font-size:.68rem;color:var(--muted);direction:ltr;display:block}
+.forms .na{color:var(--muted);opacity:.45}
+.ex{margin-top:10px;font-size:.9rem;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.ex .w{font-family:var(--f-ar);font-size:1.7rem;line-height:1.5}
+
+/* Vokalzeichen */
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.hcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:1px}
+.hcard .g{font-family:var(--f-ar);font-size:2.5rem;line-height:1.7;direction:rtl}
+.hcard .n{font-weight:700}
+.hcard .tr{color:var(--accent);font-weight:700;margin-inline-start:6px}
+.hcard .d{font-size:.82rem;color:var(--muted)}
+.note{font-size:.88rem;color:var(--muted);max-width:62ch;margin:0}
+
+/* Wörter */
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.wcard{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100px}
+.wcard .w{font-family:var(--f-ar);font-size:2rem;line-height:1.7}
+.wcard .r{font-size:.82rem;color:var(--muted);text-align:center}
+.wcard[aria-expanded="true"]{border-color:var(--accent)}
+.wcard[aria-expanded="true"] .r{color:var(--fg)}
+
+/* Quiz */
+.quiz{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px;align-items:center}
+.qmeta{display:flex;justify-content:space-between;width:100%;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.prompt{font-family:var(--f-ar);font-size:6.5rem;line-height:1.6;min-height:9rem;display:flex;align-items:center;max-width:100%;overflow-wrap:anywhere;text-align:center}
+.prompt.wordp{font-size:4.4rem}
+.prompt.latin{font-family:var(--f-body);font-size:2.6rem;font-weight:700;line-height:1.2}
+.hint{font-size:.9rem;color:var(--muted);min-height:1.4em;text-align:center;max-width:56ch}
+.hint .arx{font-family:var(--f-ar);font-size:1.4rem;color:var(--fg)}
+.hint .win{color:var(--good);font-weight:700}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+.opt{border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:10px 8px;font-size:1rem;display:flex;align-items:center;justify-content:center;gap:8px;min-height:58px}
+.opt .k{font-size:.7rem;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.opt .ar{font-family:var(--f-ar);font-size:2.1rem;line-height:1.3}
+.opt.ok{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.opt.no{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.opt:disabled{cursor:default}
+.next{border:0;background:var(--accent);color:var(--surface);border-radius:9px;padding:10px 22px;font-weight:700}
+.stats{display:flex;gap:18px;font-size:.85rem;color:var(--muted);flex-wrap:wrap;justify-content:center;font-variant-numeric:tabular-nums}
+.stats b{color:var(--fg)}
+.tip{font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;max-width:62ch;margin:0}
+.tip b{color:var(--fg)}
+.empty{color:var(--muted);text-align:center;padding:24px 0}
+
+/* Filter */
+.filters{width:100%;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);padding-bottom:14px}
+.frow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.flabel{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-inline-end:4px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 11px;font-size:.82rem;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
+.chip .ar{font-family:var(--f-ar);font-size:1.15rem;line-height:1.2;color:var(--fg)}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+/* Seminar-Modus: klein, gedimmt, ohne Erklärtexte */
+body.seminar{font-size:13px}
+body.seminar .wrap{max-width:440px;gap:10px}
+body.seminar h1,body.seminar .sub,body.seminar .tip,body.seminar .stats,body.seminar .lead,body.seminar .ss,body.seminar .shead p,body.seminar .note{display:none}
+body.seminar .prompt{font-size:4.2rem;min-height:6rem}
+body.seminar .prompt.wordp{font-size:3rem}
+body.seminar .prompt.latin{font-size:1.8rem}
+body.seminar .quiz{padding:12px;gap:10px;opacity:.85}
+body.seminar .opt{min-height:44px;padding:6px}
+body.seminar .opt.ok,body.seminar .opt.no{background:var(--bg)}
+body.seminar .filters{gap:5px;padding-bottom:8px}
+body.seminar .chip{padding:2px 8px;font-size:.75rem}
+body.seminar .chip .lbl,body.seminar .flabel{display:none}
+body.seminar .stage{padding:8px 10px}
+
+@media (max-width:520px){
+  .detail{grid-template-columns:1fr}
+  .detail .big{text-align:start}
+  .prompt{font-size:5rem;min-height:7.5rem}
+  .prompt.wordp{font-size:3.4rem}
+  .stage{grid-template-columns:36px 1fr}
+  .sprev{grid-column:2;font-size:1.25rem}
+}
+@media (prefers-reduced-motion:no-preference){
+  .opt,.cell,.stage,.wcard{transition:background .15s,border-color .15s}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Alif bis Yāʾ <span class="ar" lang="ar">أ ب ت</span></h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <div class="hctl">
+      <div class="seg" role="group" aria-label="Lernart">
+        <button data-app="path" aria-pressed="true">Lernpfad</button>
+        <button data-app="free" aria-pressed="false">Frei</button>
+      </div>
+      <button class="toggle" id="semBtn" aria-pressed="false" title="Taste S">Seminar</button>
+    </div>
+  </header>
+
+  <section id="pathView"></section>
+
+  <section id="stageView" class="stagebody" hidden>
+    <div class="shead" id="shead"></div>
+    <nav class="tabs" id="stageTabs" aria-label="Etappe">
+      <button data-st="look">Ansehen</button>
+      <button data-st="practice">Üben</button>
+      <button data-st="words">Wörter lesen</button>
+    </nav>
+    <div id="stageLook" class="stagebody"></div>
+    <div id="stageWords" class="stagebody"></div>
+  </section>
+
+  <section id="freeView" class="stagebody" hidden>
+    <nav class="tabs" id="freeTabs" aria-label="Modus">
+      <button data-ft="learn">Alphabet</button>
+      <button data-ft="read">Erkennen</button>
+      <button data-ft="write">Finden</button>
+      <button data-ft="forms">Formen</button>
+      <button data-ft="syll">Vokale</button>
+      <button data-ft="word">Wörter</button>
+    </nav>
+    <div id="freeLearn" class="stagebody"></div>
+  </section>
+
+  <section id="quizSec" hidden>
+    <div class="quiz">
+      <div class="filters" id="filters"></div>
+      <div class="qmeta"><span id="qmode"></span><span id="qstreak"></span></div>
+      <div class="prompt" id="prompt" lang="ar"></div>
+      <div class="hint" id="hint"></div>
+      <div class="opts" id="opts"></div>
+      <button class="next" id="next" hidden>Weiter (Leertaste)</button>
+      <div class="stats" id="stats"></div>
+      <p class="tip" id="tip"></p>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------- Daten ---------- */
+// ch, Name, Umschrift, Konsonant, Laut, Formgruppe, verbindet links, Beispiel, Umschrift, Bedeutung, hebr. (für später, wird nicht angezeigt)
+const L=[
+ ["ا","Alif","ā / ʾ","ʾ","Träger für langes ā, oder Sitz der Hamza","alif",0,"أَب","ʾab","Vater","א"],
+ ["ب","Bāʾ","b","b","wie deutsches b","ba",1,"بَاب","bāb","Tür","ב"],
+ ["ت","Tāʾ","t","t","wie deutsches t","ba",1,"تَمْر","tamr","Datteln","ת"],
+ ["ث","Ṯāʾ","ṯ","ṯ","stimmloses englisches th wie in think","ba",1,"ثَلْج","ṯalǧ","Schnee","ש"],
+ ["ج","Ǧīm","ǧ","ǧ","dsch wie in Dschungel","ja",1,"جَمَل","ǧamal","Kamel","ג"],
+ ["ح","Ḥāʾ","ḥ","ḥ","gepresstes h aus dem Rachen","ja",1,"حُبّ","ḥubb","Liebe","ח"],
+ ["خ","Ḫāʾ","ḫ","ḫ","ch wie in Bach","ja",1,"خُبْز","ḫubz","Brot","ח"],
+ ["د","Dāl","d","d","wie deutsches d","dal",0,"دَار","dār","Haus","ד"],
+ ["ذ","Ḏāl","ḏ","ḏ","stimmhaftes englisches th wie in this","dal",0,"ذَهَب","ḏahab","Gold","ז"],
+ ["ر","Rāʾ","r","r","gerolltes Zungen-r","ra",0,"رَجُل","raǧul","Mann","ר"],
+ ["ز","Zāy","z","z","stimmhaftes s wie in Sonne","ra",0,"زَيْت","zait","Öl","ז"],
+ ["س","Sīn","s","s","stimmloses s wie in Haus","sin",1,"سَلَام","salām","Frieden","ס"],
+ ["ش","Šīn","š","š","sch","sin",1,"شَمْس","šams","Sonne","ש"],
+ ["ص","Ṣād","ṣ","ṣ","emphatisches s: Zunge tief, der Vokal danach klingt dunkler","sad",1,"صَبْر","ṣabr","Geduld","צ"],
+ ["ض","Ḍād","ḍ","ḍ","emphatisches d","sad",1,"ضَيْف","ḍaif","Gast","צ"],
+ ["ط","Ṭāʾ","ṭ","ṭ","emphatisches t","ta",1,"طَالِب","ṭālib","Student","ט"],
+ ["ظ","Ẓāʾ","ẓ","ẓ","emphatisches ḏ","ta",1,"ظُهْر","ẓuhr","Mittag","צ"],
+ ["ع","ʿAin","ʿ","ʿ","Kehlpresslaut, den es im Deutschen nicht gibt","ain",1,"عَيْن","ʿain","Auge, Quelle","ע"],
+ ["غ","Ġain","ġ","ġ","Zäpfchen-r wie im deutschen Rabe","ain",1,"غَرْب","ġarb","Westen","ע"],
+ ["ف","Fāʾ","f","f","wie deutsches f","fa",1,"فَم","fam","Mund","פ"],
+ ["ق","Qāf","q","q","k ganz hinten im Rachen","fa",1,"قَلْب","qalb","Herz","ק"],
+ ["ك","Kāf","k","k","wie deutsches k","kaf",1,"كِتَاب","kitāb","Buch","כ"],
+ ["ل","Lām","l","l","wie deutsches l","lam",1,"لَيْل","lail","Nacht","ל"],
+ ["م","Mīm","m","m","wie deutsches m","mim",1,"مَاء","māʾ","Wasser","מ"],
+ ["ن","Nūn","n","n","wie deutsches n","ba",1,"نُور","nūr","Licht","נ"],
+ ["ه","Hāʾ","h","h","gehauchtes h, auch am Wortende hörbar","ha",1,"هُوَ","huwa","er","ה"],
+ ["و","Wāw","w / ū","w","w wie englisch water, oder langes ū","waw",0,"وَلَد","walad","Junge","ו"],
+ ["ي","Yāʾ","y / ī","y","j wie in ja, oder langes ī","ba",1,"يَد","yad","Hand","י"]
+].map((r,i)=>({i,ch:r[0],name:r[1],tr:r[2],c:r[3],snd:r[4],grp:r[5],join:!!r[6],w:r[7],wt:r[8],wm:r[9],he:r[10]}));
+const byCh={}; L.forEach(l=>byCh[l.ch]=l);
+
+const GROUPS=[
+ ["ba","Zahnform: nur die Punkte unterscheiden (am Wortanfang auch ن ي)"],
+ ["ja","Haken: Punkt unten, ohne Punkt, Punkt oben"],
+ ["dal","Winkel, verbindet nicht nach links"],["ra","Bogen nach unten, verbindet nicht nach links"],
+ ["sin","Drei Zähne"],["sad","Schlaufe"],["ta","Schlaufe mit Strich"],["ain","Offener Haken"],
+ ["fa","Kreis mit Punkt(en)"],["alif","Senkrechter Strich, verbindet nicht"],["kaf","Kāf"],["lam","Lām"],["mim","Mīm"],["ha","Hāʾ"],["waw","Wāw, verbindet nicht"]
+];
+const FG=[
+ ["zahn","Zahnform",["ba"]],["haken","Haken",["ja"]],["winkel","Winkel & Bogen",["dal","ra"]],
+ ["zaehne","Drei Zähne",["sin"]],["schlaufe","Schlaufen",["sad","ta"]],["ain","Offener Haken",["ain"]],
+ ["kreis","Kreis",["fa"]],["einzel","Einzelne",["alif","kaf","lam","mim","ha","waw"]]
+];
+
+const STAGES=[
+ {title:"Zahnform",sub:"Fünf Buchstaben mit gleicher Grundform, dazu Alif",letters:"ا ب ت ث ن ي",
+  tip:"<b>Punkte zählen:</b> ب einer unten, ت zwei oben, ث drei oben, ن einer oben, ي zwei unten. Am Wortanfang und in der Mitte sehen alle fünf gleich aus."},
+ {title:"Nicht-Verbinder",sub:"Diese Buchstaben verbinden nie nach links",letters:"د ذ ر ز و",
+  tip:"<b>Merksatz:</b> ا د ذ ر ز و verbinden nie nach links. Nach ihnen beginnt der nächste Buchstabe neu, in Anfangsform."},
+ {title:"Vokalzeichen",sub:"Ḥarakāt: kurze und lange Vokale, Sukūn, Šadda, Tanwīn",harakat:true,
+  tip:"<b>Gut zu wissen:</b> In Zeitungen und auf Schildern fehlen die Vokalzeichen meist. Lehrbücher, Kinderbücher und der Koran setzen sie. Wer sie jetzt lernt, liest später auch ohne."},
+ {title:"Haken & Bögen",sub:"ḥ und ḫ unterscheiden, dazu k, l, m",letters:"ج ح خ ك ل م",
+  tip:"<b>Haken-Familie:</b> ج hat den Punkt unten, ح keinen, خ oben. ح ist ein gepresstes h, خ das ch aus Bach."},
+ {title:"Zähne & Schlaufen",sub:"s und š, dazu die emphatischen Laute",letters:"س ش ص ض ط ظ",
+  tip:"<b>Emphatisch:</b> ص ض ط ظ sind die dunklen Gegenstücke zu s, d, t, ḏ. Die Zunge liegt tiefer, der Vokal danach klingt nach o."},
+ {title:"Kehle & Kreis",sub:"ʿAin, Ġain, Qāf und die letzten Buchstaben",letters:"ع غ ف ق ه",
+  tip:"<b>Paare:</b> ع und غ teilen sich die Form, ف und ق auch. ف hat einen Punkt, ق zwei und hängt am Wortende tiefer."},
+ {title:"Alles zusammen",sub:"Alle 28 Buchstaben, Vokale und Wörter gemischt",all:true,
+  tip:"<b>Ziel:</b> Wenn du hier durch bist, kannst du jedes vokalisierte Wort laut lesen, auch wenn du es noch nicht verstehst."}
+];
+const letterStage={};
+STAGES.forEach((s,n)=>{s.n=n+1; s.idx=s.letters?s.letters.split(" ").map(c=>byCh[c].i):[]; s.idx.forEach(i=>letterStage[i]=s.n)});
+
+const FATHA="َ",KASRA="ِ",DAMMA="ُ";
+const H=[
+ {k:"a",name:"Fatḥa",tr:"a",build:c=>c+FATHA,desc:"kurzer Strich über dem Buchstaben: kurzes a"},
+ {k:"i",name:"Kasra",tr:"i",build:c=>c+KASRA,desc:"kurzer Strich unter dem Buchstaben: kurzes i"},
+ {k:"u",name:"Ḍamma",tr:"u",build:c=>c+DAMMA,desc:"kleines Wāw über dem Buchstaben: kurzes u"},
+ {k:"aa",name:"Langes ā",tr:"ā",build:c=>c+FATHA+"ا",desc:"Fatḥa plus Alif"},
+ {k:"ii",name:"Langes ī",tr:"ī",build:c=>c+KASRA+"ي",desc:"Kasra plus Yāʾ"},
+ {k:"uu",name:"Langes ū",tr:"ū",build:c=>c+DAMMA+"و",desc:"Ḍamma plus Wāw"},
+ {k:"an",name:"Tanwīn a",tr:"an",build:c=>c+"ً"+"ا",desc:"doppelte Fatḥa, meist mit Alif: Endung -an"},
+ {k:"in",name:"Tanwīn i",tr:"in",build:c=>c+"ٍ",desc:"doppelte Kasra: Endung -in"},
+ {k:"un",name:"Tanwīn u",tr:"un",build:c=>c+"ٌ",desc:"doppelte Ḍamma: Endung -un"}
+];
+const HX=[
+ {name:"Sukūn",ex:"بِنْت",tr:"bint",desc:"kleiner Kreis: nach diesem Buchstaben kommt kein Vokal"},
+ {name:"Šadda",ex:"رَبّ",tr:"rabb",desc:"kleines w-förmiges Zeichen: der Buchstabe wird verdoppelt"}
+];
+
+const WORDS=[
+ ["بَيْت","bait","Haus"],["بِنْت","bint","Tochter, Mädchen"],["اِبْن","ibn","Sohn"],["بَنَات","banāt","Töchter"],
+ ["ثَابِت","ṯābit","fest, stabil"],["تِين","tīn","Feigen"],["بَاب","bāb","Tür"],["نَبَات","nabāt","Pflanze"],
+ ["ثِيَاب","ṯiyāb","Kleider"],["بَيْنَ","baina","zwischen"],
+ ["دِين","dīn","Religion"],["وَرْد","ward","Rosen"],["بَيْرُوت","bairūt","Beirut"],["بَرْد","bard","Kälte"],
+ ["زَيْت","zait","Öl"],["زَيْتُون","zaitūn","Oliven"],["نُور","nūr","Licht"],["دَار","dār","Haus"],
+ ["ذَنْب","ḏanb","Schuld, Sünde"],["وَزِير","wazīr","Minister"],["بَرِيد","barīd","Post"],["رَبّ","rabb","Herr"],
+ ["دُبّ","dubb","Bär"],["وَادِي","wādī","Tal"],
+ ["مَلِك","malik","König"],["كَلْب","kalb","Hund"],["لَحْم","laḥm","Fleisch"],["خُبْز","ḫubz","Brot"],
+ ["جَمَل","ǧamal","Kamel"],["كِتَاب","kitāb","Buch"],["كَاتِب","kātib","Schreiber"],["مَكْتَب","maktab","Büro, Schreibtisch"],
+ ["حُبّ","ḥubb","Liebe"],["بَحْر","baḥr","Meer"],["رَجُل","raǧul","Mann"],["جَبَل","ǧabal","Berg"],
+ ["لَيْل","lail","Nacht"],["حَلِيب","ḥalīb","Milch"],["مَرْحَبًا","marḥaban","Hallo"],["جِدًّا","ǧiddan","sehr"],
+ ["سَلَام","salām","Frieden"],["شَمْس","šams","Sonne"],["صَبْر","ṣabr","Geduld"],["طَالِب","ṭālib","Student"],
+ ["سَمَك","samak","Fisch"],["بَيْض","baiḍ","Eier"],["طَبِيب","ṭabīb","Arzt"],["شَاي","šāy","Tee"],
+ ["ظِلّ","ẓill","Schatten"],["مَطْبَخ","maṭbaḫ","Küche"],["صَبَاح","ṣabāḥ","Morgen"],["شَجَر","šaǧar","Bäume"],
+ ["عَيْن","ʿain","Auge, Quelle"],["قَلْب","qalb","Herz"],["ضَيْف","ḍaif","Gast"],["فَم","fam","Mund"],
+ ["قَلَم","qalam","Stift"],["ذَهَب","ḏahab","Gold"],["غَرْب","ġarb","Westen"],["شَارِع","šāriʿ","Straße"],
+ ["سُوق","sūq","Markt"],["صَدِيق","ṣadīq","Freund"],["فُنْدُق","funduq","Hotel"],["هُوَ","huwa","er"],
+ ["عِلْم","ʿilm","Wissen"],["شُكْرًا","šukran","danke"],["عَفْوًا","ʿafwan","keine Ursache"],["غَدًا","ġadan","morgen"],
+ ["ظُهْر","ẓuhr","Mittag"]
+].map(([ar,tr,de])=>({ar,tr,de}));
+const DIA=/[ً-ْٰ]/g;
+WORDS.forEach(w=>{w.stage=Math.max(...[...w.ar.replace(DIA,"")].map(c=>byCh[c]?letterStage[byCh[c].i]:7))});
+
+const ZWJ="‍";
+const forms=l=>({iso:l.ch,fin:ZWJ+l.ch,med:l.join?ZWJ+l.ch+ZWJ:null,ini:l.join?l.ch+ZWJ:null});
+const FL={iso:"isoliert",ini:"Anfang",med:"Mitte",fin:"Ende"};
+const FN={ini:"Anfangsform",med:"Mittelform",fin:"Endform"};
+
+/* ---------- Speicher ---------- */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):d}catch(e){return d}},
+ set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let box=store.get("ay-box",{}), tally=store.get("ay-tally",{ok:0,no:0});
+const bx=k=>box[k]||0;
+let app=store.get("ay-app","path");
+let freeTab=store.get("ay-ftab","learn"); if(!["learn","read","write","forms","syll","word"].includes(freeTab)) freeTab="learn";
+let stageN=store.get("ay-stage",null), stageTab=store.get("ay-stab","look");
+let unl=store.get("ay-unl",1);
+let fGroups=store.get("ay-fg",[]), fPos=store.get("ay-fp",["ini","med","fin"]);
+let sel=0, streak=0, cfg=null, cur=null;
+
+const $=id=>document.getElementById(id);
+const rnd=a=>a.slice().sort(()=>Math.random()-.5);
+const any=a=>a[Math.floor(Math.random()*a.length)];
+
+/* ---------- Etappen ---------- */
+const HKEYS=H.map(h=>"h:"+h.k);
+function stageKeys(s){return s.all?[...L.map(l=>String(l.i)),...HKEYS]:s.harakat?HKEYS:s.idx.map(String)}
+const sure=keys=>keys.filter(k=>bx(k)>=3).length;
+const stageDone=s=>{const k=stageKeys(s);return sure(k)===k.length};
+const known=n=>L.filter(l=>letterStage[l.i]<=n);
+function stageWordsFor(s){return s.all?WORDS:s.harakat?WORDS.filter(w=>w.stage<=2):WORDS.filter(w=>w.stage===s.n)}
+function checkUnlock(){
+  if(unl<7&&stageDone(STAGES[unl-1])){unl++;store.set("ay-unl",unl);return unl}
+  if(unl===7&&stageDone(STAGES[6])&&!store.get("ay-fin",false)){store.set("ay-fin",true);return 8}
+  return 0;
+}
+
+/* ---------- Quiz-Konfiguration ---------- */
+function stageCfg(s){
+  const kn=known(s.n), cons=kn.filter(l=>l.ch!=="ا"), wp=WORDS.filter(w=>w.stage<=s.n);
+  const base={known:kn,cons,wordPool:wp,keys:stageKeys(s),tip:s.tip,pos:["ini","med","fin"]};
+  if(s.harakat) return {...base,kinds:[["syll",4],["word",2]],letters:[],words:stageWordsFor(s)};
+  if(s.all) return {...base,known:L,kinds:[["read",2],["write",2],["forms",2],["syll",2],["word",3]],letters:L,words:WORDS,wordPool:WORDS};
+  const sw=stageWordsFor(s), kinds=[["read",3],["write",3],["forms",2]];
+  if(sw.length) kinds.push(["word",1.5]);
+  if(s.n>3) kinds.push(["syll",1]);
+  return {...base,kinds,letters:s.idx.map(i=>L[i]),words:sw.length?sw:wp};
+}
+function filtered(){return fGroups.length?L.filter(l=>FG.some(([k,,gs])=>fGroups.includes(k)&&gs.includes(l.grp))):L}
+const posKeys=(l,pos)=>{const f=forms(l);return ["ini","med","fin"].filter(k=>f[k]&&pos.includes(k))};
+const FREETIPS={
+  read:"<b>Tipp:</b> Lern die Grundform, dann zählst du nur noch Punkte. Die falschen Antworten kommen absichtlich aus derselben Formgruppe.",
+  write:"<b>Tipp:</b> ج ح خ teilen sich eine Form. Achte auf den Punkt: unten ǧ, keiner ḥ, oben ḫ.",
+  forms:"<b>Tipp:</b> Nur sechs Buchstaben verbinden nicht nach links: ا د ذ ر ز و. In der Mittelform zählen fast nur noch die Punkte.",
+  syll:"<b>Tipp:</b> Strich oben a, Strich unten i, kleines Wāw oben u. Doppelt gesetzt wird daraus -an, -in, -un.",
+  word:"<b>Tipp:</b> Lies erst die Konsonanten, dann setz die Vokale ein. Lange Vokale erkennst du an ا و ي."
+};
+function freeCfg(){
+  const pool=filtered(); let cons=pool.filter(l=>l.ch!=="ا"); if(!cons.length) cons=L.filter(l=>l.ch!=="ا");
+  const base={known:L,letters:pool,cons,words:WORDS,wordPool:WORDS,pos:fPos,tip:FREETIPS[freeTab]};
+  if(freeTab==="read"||freeTab==="write") return {...base,kinds:[[freeTab,1]],keys:pool.map(l=>String(l.i))};
+  if(freeTab==="forms") return {...base,kinds:[["forms",1]],keys:pool.filter(l=>posKeys(l,fPos).length).map(l=>String(l.i))};
+  if(freeTab==="syll") return {...base,kinds:[["syll",1]],keys:HKEYS};
+  return {...base,kinds:[["word",1]],keys:WORDS.map(w=>"w:"+w.tr)};
+}
+
+/* ---------- Fragen ---------- */
+function pickW(items,key,excl){
+  const pool=items.length>1?items.filter(x=>key(x)!==excl):items;
+  const ws=pool.map(x=>5-bx(key(x)));
+  let r=Math.random()*ws.reduce((a,b)=>a+b,0);
+  for(let k=0;k<pool.length;k++){r-=ws[k];if(r<=0)return pool[k]}
+  return pool[pool.length-1];
+}
+function wpick(arr){let r=Math.random()*arr.reduce((a,[,w])=>a+w,0);for(const [k,w] of arr){r-=w;if(r<=0)return k}return arr[arr.length-1][0]}
+function distr(l,kn){
+  const same=rnd(L.filter(x=>x.grp===l.grp&&x.i!==l.i));
+  const inKn=rnd(kn.filter(x=>x.grp!==l.grp));
+  const rest=rnd(L.filter(x=>x.grp!==l.grp&&!kn.includes(x)));
+  return [...same,...inKn,...rest].slice(0,3);
+}
+const formsPool=()=>cfg.letters.filter(l=>posKeys(l,cfg.pos).length);
+const AVAIL={read:()=>cfg.letters.length,write:()=>cfg.letters.length,forms:()=>formsPool().length,
+  syll:()=>cfg.cons.length,word:()=>cfg.words.length&&cfg.wordPool.length>=4};
+const GEN={
+  read(last){
+    const l=pickW(cfg.letters,x=>String(x.i),last);
+    return {label:"Erkennen",key:String(l.i),ok:String(l.i),prompt:l.ch,hint:"Welcher Buchstabe ist das?",
+      opts:rnd([l,...distr(l,cfg.known)]).map(x=>({id:String(x.i),html:`${x.name} <span class="mut">${x.tr}</span>`})),
+      explain:`Das ist <b>${l.name}</b> (${l.tr}): ${l.snd}.`};
+  },
+  write(last){
+    const l=pickW(cfg.letters,x=>String(x.i),last);
+    return {label:"Finden",key:String(l.i),ok:String(l.i),prompt:l.name,latin:true,hint:`Laut: ${l.tr}, ${l.snd}`,
+      opts:rnd([l,...distr(l,cfg.known)]).map(x=>({id:String(x.i),html:`<span class="ar" lang="ar">${x.ch}</span>`})),
+      explain:`${l.name} sieht so aus: <span class="arx" lang="ar">${l.ch}</span>`};
+  },
+  forms(last){
+    const l=pickW(formsPool(),x=>String(x.i),last), k=any(posKeys(l,cfg.pos));
+    return {label:"Formen",key:String(l.i),ok:String(l.i),prompt:forms(l)[k],hint:`${FN[k]}: welcher Buchstabe ist das?`,
+      opts:rnd([l,...distr(l,cfg.known)]).map(x=>({id:String(x.i),html:`<span class="ar" lang="ar">${x.ch}</span> ${x.name}`})),
+      explain:`Das ist <b>${l.name}</b> in der ${FN[k]}. Isoliert: <span class="arx" lang="ar">${l.ch}</span>`};
+  },
+  syll(last){
+    const h=pickW(H,x=>"h:"+x.k,last), l=any(cfg.cons), right=l.c+h.tr, set=new Set([right]);
+    const sib=L.filter(x=>x.grp===l.grp&&x.i!==l.i&&x.ch!=="ا");
+    const alt=sib.length?sib:cfg.cons.filter(x=>x.i!==l.i);
+    if(alt.length) set.add(any(alt).c+h.tr);
+    for(const x of rnd(H)){if(set.size>=4)break;set.add(l.c+x.tr)}
+    return {label:"Vokale",key:"h:"+h.k,ok:right,prompt:h.build(l.ch),hint:"Wie liest man diese Silbe?",
+      opts:rnd([...set]).map(t=>({id:t,html:t})),explain:`<b>${h.name}</b>: ${h.desc}. Also <b>${right}</b>.`};
+  },
+  word(last){
+    const w=pickW(cfg.words,x=>"w:"+x.tr,last);
+    const others=rnd(cfg.wordPool.filter(x=>x.tr!==w.tr)).slice(0,3);
+    return {label:"Wörter",key:"w:"+w.tr,ok:w.tr,prompt:w.ar,wordp:true,hint:"Wie liest man das Wort?",
+      opts:rnd([w,...others]).map(x=>({id:x.tr,html:x.tr})),
+      explain:"",after:`<b>${w.tr}</b> heißt „${w.de}“.`};
+  }
+};
+
+function newQ(){
+  const kinds=cfg.kinds.filter(([k])=>AVAIL[k]());
+  if(!kinds.length){
+    cur=null; $("prompt").textContent=""; $("opts").innerHTML=""; $("next").hidden=true;
+    $("hint").innerHTML=`<div class="empty">Für diese Auswahl gibt es nichts abzufragen. Wähl eine andere Gruppe oder Position.</div>`;
+    renderStats(); return;
+  }
+  const q=GEN[wpick(kinds)](cur&&cur.key);
+  cur={...q,done:false};
+  const p=$("prompt");
+  p.textContent=q.prompt; p.className="prompt"+(q.latin?" latin":"")+(q.wordp?" wordp":"");
+  p.setAttribute("lang",q.latin?"de":"ar");
+  $("hint").innerHTML=q.hint;
+  const o=$("opts"); o.innerHTML="";
+  q.opts.forEach((x,n)=>{
+    const b=document.createElement("button"); b.className="opt"; b.dataset.id=x.id;
+    b.innerHTML=`<span class="k">${n+1}</span>${x.html}`; b.onclick=()=>answer(b); o.appendChild(b);
+  });
+  $("next").hidden=true; $("qmode").textContent=q.label; $("tip").innerHTML=cfg.tip||""; renderStats();
+}
+function answer(b){
+  if(!cur||cur.done) return; cur.done=true;
+  const ok=b.dataset.id===cur.ok;
+  [...$("opts").children].forEach(x=>{x.disabled=true;if(x.dataset.id===cur.ok)x.classList.add("ok")});
+  if(!ok) b.classList.add("no");
+  box[cur.key]=ok?Math.min(4,bx(cur.key)+1):0;
+  ok?(tally.ok++,streak++):(tally.no++,streak=0);
+  store.set("ay-box",box); store.set("ay-tally",tally);
+  let msg=ok?(cur.after||""):[cur.explain,cur.after].filter(Boolean).join(" ");
+  const u=app==="path"?checkUnlock():0;
+  if(u===8) msg=`<span class="win">Alle sieben Tage geschafft. Du kannst jetzt jedes vokalisierte Wort lesen.</span>`;
+  else if(u) msg=`<span class="win">Tag ${u-1} geschafft. Tag ${u} ist jetzt offen.</span>`+(msg?"<br>"+msg:"");
+  $("hint").innerHTML=msg||cur.hint;
+  $("next").hidden=false; renderStats();
+  if(app==="path"&&stageN) renderStageHead();
+  if(ok&&!u){const q=cur;setTimeout(()=>{if(cur===q)newQ()},cur.after?1600:(document.body.classList.contains("seminar")?650:900))}
+}
+function renderStats(){
+  const k=cfg.keys||[];
+  $("qstreak").textContent=streak?`Serie ${streak}`:"";
+  $("stats").innerHTML=`<span><b>${sure(k)}</b>/${k.length} sicher</span><span><b>${tally.ok}</b> richtig</span><span><b>${tally.no}</b> falsch</span>`;
+}
+
+/* ---------- Filter (nur Frei-Modus) ---------- */
+function chip(on,html,fn){const b=document.createElement("button");b.className="chip";b.setAttribute("aria-pressed",on);b.innerHTML=html;b.onclick=fn;return b}
+function renderFilters(){
+  const fb=$("filters"); fb.innerHTML="";
+  const show=app==="free"&&["read","write","forms","syll"].includes(freeTab);
+  fb.hidden=!show; if(!show) return;
+  const r1=document.createElement("div"); r1.className="frow";
+  r1.innerHTML=`<span class="flabel">${freeTab==="syll"?"Konsonanten":"Formen"}</span>`;
+  r1.appendChild(chip(!fGroups.length,"Alle",()=>{fGroups=[];saveF()}));
+  FG.forEach(([k,label,gs])=>{
+    const letters=L.filter(l=>gs.includes(l.grp)).map(l=>l.ch).join(" ");
+    r1.appendChild(chip(fGroups.includes(k),`<span class="lbl">${label}</span><span class="ar" lang="ar">${letters}</span>`,()=>{
+      fGroups=fGroups.includes(k)?fGroups.filter(x=>x!==k):[...fGroups,k];saveF()}));
+  });
+  fb.appendChild(r1);
+  if(freeTab==="forms"){
+    const r2=document.createElement("div"); r2.className="frow";
+    r2.innerHTML=`<span class="flabel">Position</span>`;
+    ["ini","med","fin"].forEach(k=>r2.appendChild(chip(fPos.includes(k),FL[k],()=>{
+      const n=fPos.includes(k)?fPos.filter(x=>x!==k):[...fPos,k]; if(n.length){fPos=n;saveF()}})));
+    fb.appendChild(r2);
+  }
+}
+function saveF(){store.set("ay-fg",fGroups);store.set("ay-fp",fPos);cfg=freeCfg();renderFilters();cur=null;newQ()}
+
+/* ---------- Buchstaben-Ansichten ---------- */
+function detailHTML(l){
+  const f=forms(l);
+  const fc=["iso","ini","med","fin"].map(k=>f[k]
+    ?`<div><span class="g" lang="ar">${f[k]}</span><span class="l">${FL[k]}</span></div>`
+    :`<div><span class="g na">–</span><span class="l">${FL[k]}</span></div>`).join("");
+  return `<div class="big" lang="ar">${l.ch}</div><div style="min-width:0">
+    <h3>${l.name}<small>${l.tr}</small></h3>
+    <p>${l.snd[0].toUpperCase()+l.snd.slice(1)}.${l.join?"":" Verbindet nicht mit dem folgenden Buchstaben."}</p>
+    <div class="forms">${fc}</div>
+    <div class="ex"><span class="mut">Beispiel</span><span class="w" lang="ar">${l.w}</span><span>${l.wt}, ${l.wm}</span></div></div>`;
+}
+function cellsEl(letters,onPick){
+  const c=document.createElement("div"); c.className="cells";
+  letters.forEach(l=>{
+    const b=document.createElement("button"); b.className="cell"; b.setAttribute("aria-pressed",l.i===sel); b.setAttribute("aria-label",l.name);
+    b.innerHTML=`<span class="g" lang="ar">${l.ch}</span><span class="t">${l.tr}</span><span class="box"><i style="width:${Math.min(4,bx(l.i))*25}%"></i></span>`;
+    b.onclick=()=>{sel=l.i;onPick()}; c.appendChild(b);
+  });
+  return c;
+}
+function renderAlphabet(el){
+  el.innerHTML=`<div class="detail">${detailHTML(L[sel])}</div>`;
+  const g=document.createElement("div"); g.className="groups";
+  GROUPS.forEach(([k,label])=>{
+    const ls=L.filter(l=>l.grp===k); if(!ls.length) return;
+    const d=document.createElement("div"); d.className="group";
+    d.innerHTML=`<div class="glabel">${label}</div>`;
+    d.appendChild(cellsEl(ls,()=>renderAlphabet(el))); g.appendChild(d);
+  });
+  el.appendChild(g);
+}
+
+/* ---------- Lernpfad ---------- */
+function renderPath(){
+  const items=STAGES.map(s=>{
+    const k=stageKeys(s), p=sure(k), done=p===k.length, open=s.n<=unl;
+    const st=done?"done":open?"open":"locked";
+    const prev=s.letters||(s.harakat?"بَ بِ بُ بًا":"أ … ي");
+    const pill=done?`<span class="pill ok">Geschafft</span>`:open?`<span class="pill">${p}/${k.length}</span>`:`<span class="pill">Gesperrt</span>`;
+    return `<li><button class="stage ${st}" data-n="${s.n}" ${open?"":"disabled"} aria-label="Tag ${s.n}: ${s.title}">
+      <span class="num">${done?"✓":s.n}</span>
+      <span class="sb"><span class="st">Tag ${s.n} · ${s.title}</span><span class="ss">${s.sub}</span>
+      <span class="bar"><i style="width:${p/k.length*100}%"></i></span></span>
+      <span class="sb" style="align-items:flex-end;gap:4px"><span class="sprev" lang="ar">${prev}</span>${pill}</span></button></li>`;
+  }).join("");
+  $("pathView").innerHTML=`<p class="lead">Ein Paket pro Tag. Der nächste Tag geht auf, sobald jedes Zeichen dreimal in Folge sitzt. Keine Lust auf Reihenfolge? Oben auf „Frei“ schalten.</p><ol class="path">${items}</ol>`;
+  $("pathView").querySelectorAll(".stage").forEach(b=>b.onclick=()=>{
+    stageN=+b.dataset.n; const s=STAGES[stageN-1];
+    stageTab="look"; if(s.idx.length) sel=s.idx[0]; save(); render();
+  });
+}
+function renderStageHead(){
+  const s=STAGES[stageN-1], k=stageKeys(s), p=sure(k), done=p===k.length;
+  const canSkip=!done&&s.n===unl&&s.n<7;
+  $("shead").innerHTML=`<button class="back" id="backBtn">← Alle Tage</button>
+    <h2>Tag ${s.n} · ${s.title}</h2><p>${s.sub}</p>
+    <div class="srow"><span class="bar"><i style="width:${p/k.length*100}%"></i></span><span>${p}/${k.length} sicher</span>
+    ${done?`<span class="pill ok">Geschafft</span>`:""}${canSkip?`<button class="linkbtn" id="skipBtn">Kann ich schon, Tag ${s.n+1} freischalten</button>`:""}</div>`;
+  $("backBtn").onclick=()=>{stageN=null;save();render()};
+  if(canSkip) $("skipBtn").onclick=()=>{unl++;store.set("ay-unl",unl);stageN=null;save();render()};
+}
+function renderStageLook(){
+  const s=STAGES[stageN-1], el=$("stageLook");
+  if(s.harakat){
+    const cards=H.map(h=>`<div class="hcard"><span class="g" lang="ar">${h.build("ب")}</span><span><span class="n">${h.name}</span><span class="tr">b${h.tr}</span></span><span class="d">${h.desc}</span></div>`).join("")
+      +HX.map(h=>`<div class="hcard"><span class="g" lang="ar">${h.ex}</span><span><span class="n">${h.name}</span><span class="tr">${h.tr}</span></span><span class="d">${h.desc}</span></div>`).join("");
+    el.innerHTML=`<p class="note">Alle Beispiele auf ب. Im Üben-Teil kommen sie auf allen Buchstaben, die du schon kennst.</p><div class="hgrid">${cards}</div>`;
+    return;
+  }
+  if(s.all){renderAlphabet(el);return}
+  const ls=s.idx.map(i=>L[i]); if(!s.idx.includes(sel)) sel=s.idx[0];
+  el.innerHTML=`<div class="detail">${detailHTML(L[sel])}</div>`;
+  el.appendChild(cellsEl(ls,renderStageLook));
+  const p=document.createElement("p"); p.className="note"; p.innerHTML=s.tip; el.appendChild(p);
+}
+function renderStageWords(){
+  const s=STAGES[stageN-1], ws=stageWordsFor(s);
+  $("stageWords").innerHTML=`<p class="note">Erst selbst laut lesen, dann antippen zum Prüfen. Alle Wörter bestehen nur aus Buchstaben, die du bis hier kennst.</p>
+    <div class="wgrid">${ws.map((w,n)=>`<button class="wcard" data-n="${n}" aria-expanded="false"><span class="w" lang="ar">${w.ar}</span><span class="r">antippen</span></button>`).join("")}</div>`;
+  $("stageWords").querySelectorAll(".wcard").forEach(b=>b.onclick=()=>{
+    const w=ws[+b.dataset.n], open=b.getAttribute("aria-expanded")!=="true";
+    b.setAttribute("aria-expanded",open); b.querySelector(".r").innerHTML=open?`<b>${w.tr}</b><br>${w.de}`:"antippen";
+  });
+}
+
+/* ---------- Steuerung ---------- */
+function save(){store.set("ay-app",app);store.set("ay-ftab",freeTab);store.set("ay-stage",stageN);store.set("ay-stab",stageTab)}
+function render(){
+  document.querySelectorAll(".seg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.app===app));
+  $("sub").textContent=app==="path"
+    ?"Sieben Tage, Schritt für Schritt: erst die Buchstaben, dann die Vokalzeichen, dann echte Wörter."
+    :"Alles offen. Such dir selbst aus, was du üben willst.";
+  if(stageN&&(stageN>unl||stageN<1||stageN>7)) stageN=null;
+  const inStage=app==="path"&&stageN;
+  $("pathView").hidden=!(app==="path"&&!stageN);
+  $("stageView").hidden=!inStage;
+  $("freeView").hidden=app!=="free";
+  let quiz=null;
+  if(app==="path"){
+    if(!stageN) renderPath();
+    else{
+      renderStageHead();
+      document.querySelectorAll("#stageTabs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.st===stageTab));
+      $("stageLook").hidden=stageTab!=="look"; $("stageWords").hidden=stageTab!=="words";
+      if(stageTab==="look") renderStageLook();
+      if(stageTab==="words") renderStageWords();
+      if(stageTab==="practice") quiz=stageCfg(STAGES[stageN-1]);
+    }
+  }else{
+    document.querySelectorAll("#freeTabs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.ft===freeTab));
+    $("freeLearn").hidden=freeTab!=="learn";
+    if(freeTab==="learn") renderAlphabet($("freeLearn")); else quiz=freeCfg();
+  }
+  $("quizSec").hidden=!quiz;
+  if(quiz){cfg=quiz;cur=null;renderFilters();newQ()}
+}
+document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{app=b.dataset.app;save();render()});
+document.querySelectorAll("#stageTabs button").forEach(b=>b.onclick=()=>{stageTab=b.dataset.st;save();render()});
+document.querySelectorAll("#freeTabs button").forEach(b=>b.onclick=()=>{freeTab=b.dataset.ft;save();render()});
+$("next").onclick=newQ;
+function setSem(on){document.body.classList.toggle("seminar",on);$("semBtn").setAttribute("aria-pressed",on);store.set("ay-sem",on)}
+$("semBtn").onclick=()=>setSem(!document.body.classList.contains("seminar"));
+
+function navList(){
+  if(app==="free"&&freeTab==="learn") return {list:L.map(l=>l.i),redraw:()=>renderAlphabet($("freeLearn"))};
+  if(app==="path"&&stageN&&stageTab==="look"){
+    const s=STAGES[stageN-1];
+    if(s.all) return {list:L.map(l=>l.i),redraw:renderStageLook};
+    if(s.idx.length) return {list:s.idx,redraw:renderStageLook};
+  }
+  return null;
+}
+document.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT"||e.metaKey||e.ctrlKey||e.altKey) return;
+  if(e.key==="s"||e.key==="S"){setSem(!document.body.classList.contains("seminar"));return}
+  const nav=navList();
+  if(nav&&(e.key==="ArrowLeft"||e.key==="ArrowRight")){
+    const i=Math.max(0,nav.list.indexOf(sel)), d=e.key==="ArrowLeft"?1:-1;
+    sel=nav.list[(i+d+nav.list.length)%nav.list.length]; nav.redraw(); return;
+  }
+  if($("quizSec").hidden) return;
+  const n=+e.key; if(n>=1&&n<=4){const b=$("opts").children[n-1]; if(b) b.click()}
+  if((e.key===" "||e.key==="Enter")&&cur&&cur.done){e.preventDefault();newQ()}
+});
+
+setSem(!!store.get("ay-sem",false));
+render();
+</script>
+
+<footer class="foot"><span>Dein Lernstand bleibt auf deinem Gerät.</span><a href="datenschutz.html">Datenschutz</a></footer>
+<noscript><p style="text-align:center">Diese Lern-App braucht JavaScript.</p></noscript>
+<script>
+if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+</script>
+</body>
+</html>
